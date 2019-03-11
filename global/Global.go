@@ -18,7 +18,7 @@ var Ctx context.Context
 var Cancel func()
 
 func init() {
-	goToolMSSql.SetMaxIdleConn(3)
-	goToolMSSql.SetMaxOpenConn(3)
-	goToolMSSql.SetMaxLifetime(time.Second * 15)
+	goToolMSSql.SetMaxIdleConn(15)
+	goToolMSSql.SetMaxOpenConn(15)
+	goToolMSSql.SetMaxLifetime(time.Second * 60)
 }

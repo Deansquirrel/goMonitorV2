@@ -6,6 +6,7 @@ import (
 	"github.com/Deansquirrel/goMonitorV2/taskConfigRepository"
 	log "github.com/Deansquirrel/goToolLog"
 	"github.com/Deansquirrel/goToolMSSql"
+	"github.com/kataras/iris/core/errors"
 	"strconv"
 	"strings"
 )
@@ -25,10 +26,21 @@ func (iw *intWorker) Run() {
 	if iw.intTaskConfigData == nil {
 		return
 	}
-	rows, err := iw.getRowsBySQL(iw.intTaskConfigData.FSearch)
+	num, err := iw.getCheckNum()
 	if err != nil {
 		comm.sendMsg(iw.intTaskConfigData.FId, comm.getMsg(iw.intTaskConfigData.FMsgTitle, err.Error()))
 		return
+	}
+	if num > iw.intTaskConfigData.FCheckMax || num < iw.intTaskConfigData.FCheckMin {
+		comm.sendMsg(iw.intTaskConfigData.FId, comm.getMsg(iw.intTaskConfigData.FMsgTitle, strings.Replace(iw.intTaskConfigData.FMsgContent, "title", strconv.Itoa(num), -1)))
+	}
+}
+
+//获取待检测值
+func (iw *intWorker) getCheckNum() (int, error) {
+	rows, err := iw.getRowsBySQL(iw.intTaskConfigData.FSearch)
+	if err != nil {
+		return 0, err
 	}
 	defer func() {
 		_ = rows.Close()
@@ -44,22 +56,12 @@ func (iw *intWorker) Run() {
 		}
 	}
 	if err != nil {
-		log.Error(err.Error())
-		comm.sendMsg(iw.intTaskConfigData.FId, comm.getMsg(iw.intTaskConfigData.FMsgTitle, err.Error()))
-		return
-	}
-	if rows.Err() != nil {
-		log.Error(rows.Err().Error())
-		comm.sendMsg(iw.intTaskConfigData.FId, comm.getMsg(iw.intTaskConfigData.FMsgTitle, rows.Err().Error()))
+		return 0, err
 	}
 	if len(list) != 1 {
-		comm.sendMsg(iw.intTaskConfigData.FId, comm.getMsg(iw.intTaskConfigData.FMsgTitle, fmt.Sprintf("SQL返回数量异常，exp:1,act:%d", len(list))))
-		return
+		return 0, errors.New(fmt.Sprintf("SQL返回数量异常，exp:1,act:%d", len(list)))
 	}
-	num = list[0]
-	if num > iw.intTaskConfigData.FCheckMax || num < iw.intTaskConfigData.FCheckMin {
-		comm.sendMsg(iw.intTaskConfigData.FId, comm.getMsg(iw.intTaskConfigData.FMsgTitle, strings.Replace(iw.intTaskConfigData.FMsgContent, "title", strconv.Itoa(num), -1)))
-	}
+	return list[0], nil
 }
 
 //获取DB配置

@@ -2,11 +2,11 @@ package worker
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"github.com/Deansquirrel/goMonitorV2/taskConfigRepository"
 	log "github.com/Deansquirrel/goToolLog"
 	"github.com/Deansquirrel/goToolMSSql"
-	"github.com/kataras/iris/core/errors"
 	"strconv"
 	"strings"
 )
@@ -32,7 +32,12 @@ func (iw *intWorker) Run() {
 		return
 	}
 	if num > iw.intTaskConfigData.FCheckMax || num < iw.intTaskConfigData.FCheckMin {
-		comm.sendMsg(iw.intTaskConfigData.FId, comm.getMsg(iw.intTaskConfigData.FMsgTitle, strings.Replace(iw.intTaskConfigData.FMsgContent, "title", strconv.Itoa(num), -1)))
+		msg := comm.getMsg(iw.intTaskConfigData.FMsgTitle, strings.Replace(iw.intTaskConfigData.FMsgContent, "title", strconv.Itoa(num), -1))
+		dMsg := iw.getDMsg()
+		if dMsg != "" {
+			msg = msg + "\n" + dMsg
+		}
+		comm.sendMsg(iw.intTaskConfigData.FId, msg)
 	}
 }
 
@@ -87,4 +92,73 @@ func (iw *intWorker) getRowsBySQL(sql string) (*sql.Rows, error) {
 		return nil, err
 	}
 	return rows, nil
+}
+
+//获取详细消息
+func (iw *intWorker) getDMsg() string {
+	intTaskDConfig := taskConfigRepository.IntTaskDConfig{}
+	dConfigList, err := intTaskDConfig.GetIntTaskDConfig(iw.intTaskConfigData.FId)
+	if err != nil {
+		return err.Error()
+	}
+	var msg, result string
+	for _, dConfig := range dConfigList {
+		msg = iw.getSingleDMsg(dConfig.FMsgSearch)
+		if msg != "" {
+			if result != "" {
+				result = result + "\n"
+			}
+			result = result + "--------------------"
+			result = result + "\n" + msg
+		}
+	}
+	return result
+}
+
+func (iw *intWorker) getSingleDMsg(search string) string {
+	if search == "" {
+		return ""
+	}
+	rows, err := iw.getRowsBySQL(search)
+	if err != nil {
+		return fmt.Sprintf("查询明细内容时遇到错误：%s，查询语句为：%s", err.Error(), search)
+	}
+	defer func() {
+		_ = rows.Close()
+	}()
+	titleList, err := rows.Columns()
+	if err != nil {
+		return fmt.Sprintf("获取明细内容表头时遇到错误：%s，查询语句为：%s", err.Error(), search)
+	}
+	values := make([]sql.RawBytes, len(titleList))
+	iList := make([]interface{}, len(titleList))
+	for i := range values {
+		iList[i] = &values[i]
+	}
+	result := ""
+	for rows.Next() {
+		if result != "" {
+			result = result + "\n" + "--------------------"
+		}
+		err = rows.Scan(iList...)
+		if err != nil {
+			return fmt.Sprintf("读取明细内容时遇到错误：%s，查询语句为：%s", err.Error(), search)
+		}
+		for i := 0; i < len(titleList); i++ {
+			if result != "" {
+				result = result + "\n"
+			}
+			var v string
+			if values[i] == nil {
+				v = "NULL"
+			} else {
+				v = string(values[i])
+			}
+			result = result + titleList[i] + " - " + v
+		}
+	}
+	if rows.Err() != nil {
+		return fmt.Sprintf("读取明细内容时遇到错误：%s，查询语句为：%s", err.Error(), search)
+	}
+	return result
 }

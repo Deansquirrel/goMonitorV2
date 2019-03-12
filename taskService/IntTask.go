@@ -8,6 +8,7 @@ import (
 	"github.com/Deansquirrel/goToolCommon"
 	log "github.com/Deansquirrel/goToolLog"
 	"github.com/robfig/cron"
+	"time"
 )
 
 type IntTask struct {
@@ -46,13 +47,14 @@ func (it *IntTask) StartTask() error {
 		log.Error(errMsg)
 		return errors.New(errMsg)
 	}
+	it.startRegularRefresh()
 	return nil
 }
 
 func (it *IntTask) StartJob(id string) error {
 	c, ok := intTaskList[id]
 	if !ok {
-		return errors.New("Task is not exist")
+		return errors.New("task is not exist")
 	}
 	c.Start()
 	return nil
@@ -61,10 +63,22 @@ func (it *IntTask) StartJob(id string) error {
 func (it *IntTask) StopJob(id string) error {
 	c, ok := intTaskList[id]
 	if !ok {
-		return errors.New("Task is not exist")
+		return errors.New("task is not exist")
 	}
 	c.Stop()
 	return nil
+}
+
+func (it *IntTask) startRegularRefresh() {
+	time.AfterFunc(time.Second*30, it.startRegularRefresh)
+	it.refreshConfig()
+}
+
+func (it *IntTask) refreshConfig() {
+	err := it.RefreshConfig()
+	if err != nil {
+		log.Error("刷新[IntTask]配置时遇到错误：" + err.Error())
+	}
 }
 
 func (it *IntTask) RefreshConfig() error {

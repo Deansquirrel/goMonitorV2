@@ -49,7 +49,7 @@ func (c *common) getMsg(title, content string) string {
 			}
 		}
 	}
-	msg = goToolCommon.GetDateTimeStr(time.Now()) + "\n\n" + msg
+	msg = goToolCommon.GetDateTimeStr(time.Now()) + "\n" + msg
 	return msg
 }
 

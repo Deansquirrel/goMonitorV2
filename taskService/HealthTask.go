@@ -11,34 +11,34 @@ import (
 	"time"
 )
 
-type IntTask struct {
+type HealthTask struct {
 }
 
-func (it *IntTask) StartTask() error {
-	intTaskConfigRepository := taskConfigRepository.IntTaskConfig{}
+func (ht *HealthTask) StartTask() error {
+	healthTaskConfigRepository := taskConfigRepository.HealthTaskConfig{}
 	//获取配置列表
-	list, err := intTaskConfigRepository.GetIntTaskConfigList()
+	list, err := healthTaskConfigRepository.GetHealthConfigList()
 	if err != nil {
 		return err
 	}
 	//清空Config列表
-	intConfigList = make(map[string]*taskConfigRepository.IntTaskConfigData)
+	healthConfigList = make(map[string]*taskConfigRepository.HealthTaskConfigData)
 	//清空Task列表
-	if len(intTaskList) > 0 {
+	if len(healthTaskList) > 0 {
 		keyList := make([]string, 0)
-		for key := range intTaskList {
+		for key := range healthTaskList {
 			keyList = append(keyList, key)
 		}
 		for _, key := range keyList {
-			intTaskList[key].Stop()
-			delete(intConfigList, key)
+			healthTaskList[key].Stop()
+			delete(healthConfigList, key)
 		}
 	}
 	//缓存配置列表、任务列表
 	errMsg := ""
-	errMsgFormat := "添加Int任务[%s]报错：%s；"
+	errMsgFormat := "添加Health任务[%s]报错：%s；"
 	for _, config := range list {
-		err = it.addTask(config)
+		err = ht.addTask(config)
 		if err != nil {
 			errMsg = errMsg + fmt.Sprintf(errMsgFormat, config.FId, err.Error())
 		}
@@ -47,12 +47,12 @@ func (it *IntTask) StartTask() error {
 		log.Error(errMsg)
 		return errors.New(errMsg)
 	}
-	it.startRegularRefresh()
+	ht.startRegularRefresh()
 	return nil
 }
 
-func (it *IntTask) StartJob(id string) error {
-	c, ok := intTaskList[id]
+func (ht *HealthTask) StartJob(id string) error {
+	c, ok := healthTaskList[id]
 	if !ok {
 		return errors.New("task is not exist")
 	}
@@ -60,8 +60,8 @@ func (it *IntTask) StartJob(id string) error {
 	return nil
 }
 
-func (it *IntTask) StopJob(id string) error {
-	c, ok := intTaskList[id]
+func (ht *HealthTask) StopJob(id string) error {
+	c, ok := healthTaskList[id]
 	if !ok {
 		return errors.New("task is not exist")
 	}
@@ -69,53 +69,52 @@ func (it *IntTask) StopJob(id string) error {
 	return nil
 }
 
-func (it *IntTask) startRegularRefresh() {
-	time.AfterFunc(time.Second*30, it.startRegularRefresh)
-	it.refreshConfig()
+func (ht *HealthTask) startRegularRefresh() {
+	time.AfterFunc(time.Second*30, ht.startRegularRefresh)
+	ht.refreshConfig()
 }
 
-func (it *IntTask) refreshConfig() {
-	err := it.RefreshConfig()
+func (ht *HealthTask) refreshConfig() {
+	err := ht.RefreshConfig()
 	if err != nil {
-		log.Error("刷新Int配置时遇到错误：" + err.Error())
+		log.Error("刷新[IntTask]配置时遇到错误：" + err.Error())
 	}
 }
 
-func (it *IntTask) RefreshConfig() error {
-	intTaskConfigRepository := taskConfigRepository.IntTaskConfig{}
+func (ht *HealthTask) RefreshConfig() error {
+	healthTaskConfigRepository := taskConfigRepository.HealthTaskConfig{}
 	//获取配置列表
-	list, err := intTaskConfigRepository.GetIntTaskConfigList()
+	list, err := healthTaskConfigRepository.GetHealthConfigList()
 	if err != nil {
 		return err
 	}
 	listId := make([]string, 0)
-	mapId := make(map[string]*taskConfigRepository.IntTaskConfigData, 0)
+	mapId := make(map[string]*taskConfigRepository.HealthTaskConfigData, 0)
 	for _, config := range list {
 		listId = append(listId, config.FId)
 		mapId[config.FId] = config
 	}
-
 	configId := make([]string, 0)
-	for key := range intConfigList {
+	for key := range healthConfigList {
 		configId = append(configId, key)
 	}
 
 	addList, delList, checkList := goToolCommon.CheckDiff(listId, configId)
 
 	errMsg := ""
-	errMsgFormat := "刷新Int任务[%s]报错：%s；"
+	errMsgFormat := "刷新Health任务[%s]报错：%s；"
 
 	for _, id := range addList {
-		err = it.addTask(mapId[id])
+		err = ht.addTask(mapId[id])
 		if err != nil {
 			errMsg = errMsg + fmt.Sprintf(errMsgFormat, id, err.Error())
 		}
 	}
 	for _, id := range delList {
-		it.removeTask(id)
+		ht.removeTask(id)
 	}
 	for _, id := range checkList {
-		err = it.checkTask(mapId[id])
+		err = ht.checkTask(mapId[id])
 		if err != nil {
 			errMsg = errMsg + fmt.Sprintf(errMsgFormat, id, err.Error())
 		}
@@ -126,17 +125,17 @@ func (it *IntTask) RefreshConfig() error {
 	return nil
 }
 
-func (it *IntTask) addTask(config *taskConfigRepository.IntTaskConfigData) error {
+func (ht *HealthTask) addTask(config *taskConfigRepository.HealthTaskConfigData) error {
 	//------------------------------------------------------------------------------------------------------------------
 	configStr, err := goToolCommon.GetJsonStr(config)
 	if err != nil {
-		log.Warn(fmt.Sprintf("Add Int Task，转换配置内容时遇到错误:%s，configID：%s", configStr, config.FId))
+		log.Warn(fmt.Sprintf("Add Health Task，转换配置内容时遇到错误:%s，configID：%s", configStr, config.FId))
 	} else {
-		log.Warn(fmt.Sprintf("Add Int Task:%s", configStr))
+		log.Warn(fmt.Sprintf("Add Health Task:%s", configStr))
 	}
 	//------------------------------------------------------------------------------------------------------------------
-	intConfigList[config.FId] = config
-	w := worker.NewIntWorker(config)
+	healthConfigList[config.FId] = config
+	w := worker.NewHealthWorker(config)
 	c := cron.New()
 	err = c.AddJob(config.FCron, w)
 	if err != nil {
@@ -144,40 +143,40 @@ func (it *IntTask) addTask(config *taskConfigRepository.IntTaskConfigData) error
 	} else {
 		c.Start()
 	}
-	intTaskList[config.FId] = c
+	healthTaskList[config.FId] = c
 	return err
 }
 
-func (it *IntTask) checkTask(config *taskConfigRepository.IntTaskConfigData) error {
-	exConfig := intConfigList[config.FId]
+func (ht *HealthTask) checkTask(config *taskConfigRepository.HealthTaskConfigData) error {
+	exConfig := healthConfigList[config.FId]
 	if exConfig == nil {
-		return it.addTask(config)
+		return ht.addTask(config)
 	}
 	if exConfig.IsEqual(config) {
 		return nil
 	}
-	it.removeTask(config.FId)
-	return it.addTask(config)
+	ht.removeTask(config.FId)
+	return ht.addTask(config)
 }
 
-func (it *IntTask) removeTask(id string) {
-	config := intConfigList[id]
+func (ht *HealthTask) removeTask(id string) {
+	config := healthConfigList[id]
 	if config == nil {
 		log.Warn(fmt.Sprintf("remove task :config is not exist,taskId[%s]", id))
 	} else {
 		configStr, err := goToolCommon.GetJsonStr(config)
 		if err != nil {
-			log.Warn(fmt.Sprintf("Del Int Task，转换配置内容时遇到错误:%s，configID：%s", configStr, config.FId))
+			log.Warn(fmt.Sprintf("Del Health Task，转换配置内容时遇到错误:%s，configID：%s", configStr, config.FId))
 		} else {
-			log.Warn(fmt.Sprintf("Del Int Task:%s", configStr))
+			log.Warn(fmt.Sprintf("Del Health Task:%s", configStr))
 		}
-		delete(intConfigList, id)
+		delete(healthConfigList, id)
 	}
-	c := intTaskList[id]
+	c := healthTaskList[id]
 	if c == nil {
 		log.Warn(fmt.Sprintf("remove task :task is not exist,taskId[%s]", id))
 	} else {
 		c.Stop()
-		delete(intTaskList, id)
+		delete(healthTaskList, id)
 	}
 }

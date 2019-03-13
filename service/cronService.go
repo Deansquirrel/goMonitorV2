@@ -54,8 +54,14 @@ func (cs *cronService) start() {
 	//	}
 	//	time.Sleep(time.Second * 5)
 	//}
+	var err error
 	intTask := taskService.IntTask{}
-	err := intTask.StartTask()
+	err = intTask.StartTask()
+	if err != nil {
+		log.Error(err.Error())
+	}
+	healthTask := taskService.HealthTask{}
+	err = healthTask.StartTask()
 	if err != nil {
 		log.Error(err.Error())
 	}

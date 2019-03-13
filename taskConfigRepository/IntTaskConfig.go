@@ -141,15 +141,15 @@ func (itc *IntTaskConfig) getIntTaskConfigListByRows(rows *sql.Rows) ([]*IntTask
 			FMsgTitle:   fMsgTitle,
 			FMsgContent: fMsgContent,
 		}
-		if err != nil {
-			log.Error(err.Error())
-			return nil, err
-		}
-		if rows.Err() != nil {
-			log.Error(rows.Err().Error())
-			return nil, rows.Err()
-		}
 		resultList = append(resultList, &config)
+	}
+	if err != nil {
+		log.Error(err.Error())
+		return nil, err
+	}
+	if rows.Err() != nil {
+		log.Error(rows.Err().Error())
+		return nil, rows.Err()
 	}
 	return resultList, nil
 }

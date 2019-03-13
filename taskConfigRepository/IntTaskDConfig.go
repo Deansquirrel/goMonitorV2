@@ -42,7 +42,7 @@ func (itc *IntTaskDConfig) getIntTaskDConfigListByRows(rows *sql.Rows) ([]*intTa
 	defer func() {
 		_ = rows.Close()
 	}()
-	var fId, fMsgSearch string
+	var fId, fMsgSearch sql.NullString
 	resultList := make([]*intTaskDConfigData, 0)
 	var err error
 	for rows.Next() {
@@ -50,9 +50,14 @@ func (itc *IntTaskDConfig) getIntTaskDConfigListByRows(rows *sql.Rows) ([]*intTa
 		if err != nil {
 			break
 		}
-		config := intTaskDConfigData{
-			FId:        fId,
-			FMsgSearch: fMsgSearch,
+		config := intTaskDConfigData{}
+		config.FId = "Null"
+		if fId.Valid {
+			config.FId = fId.String
+		}
+		config.FMsgSearch = "Null"
+		if fMsgSearch.Valid {
+			config.FMsgSearch = fMsgSearch.String
 		}
 		resultList = append(resultList, &config)
 	}

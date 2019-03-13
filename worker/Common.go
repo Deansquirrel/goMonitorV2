@@ -8,6 +8,7 @@ import (
 	"github.com/Deansquirrel/goToolCommon"
 	log "github.com/Deansquirrel/goToolLog"
 	"strings"
+	"time"
 )
 
 var comm common
@@ -48,6 +49,7 @@ func (c *common) getMsg(title, content string) string {
 			}
 		}
 	}
+	msg = goToolCommon.GetDateTimeStr(time.Now()) + "\n\n" + msg
 	return msg
 }
 

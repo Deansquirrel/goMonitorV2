@@ -130,27 +130,28 @@ func (iw *intWorker) getSingleDMsg(search string) string {
 	if err != nil {
 		return fmt.Sprintf("获取明细内容表头时遇到错误：%s，查询语句为：%s", err.Error(), search)
 	}
-	values := make([]sql.RawBytes, len(titleList))
-	iList := make([]interface{}, len(titleList))
-	for i := range values {
-		iList[i] = &values[i]
+	counter := len(titleList)
+	values := make([]sql.RawBytes, counter)
+	valuePointers := make([]interface{}, counter)
+	for i := 0; i < counter; i++ {
+		valuePointers[i] = &values[i]
 	}
-	result := ""
+	var result string
 	for rows.Next() {
-		if result != "" {
-			result = result + "\n" + "--------------------"
-		}
-		err = rows.Scan(iList...)
+		err = rows.Scan(valuePointers...)
 		if err != nil {
 			return fmt.Sprintf("读取明细内容时遇到错误：%s，查询语句为：%s", err.Error(), search)
 		}
-		for i := 0; i < len(titleList); i++ {
+		if result != "" {
+			result = result + "\n" + "--------------------"
+		}
+		for i := 0; i < counter; i++ {
 			if result != "" {
 				result = result + "\n"
 			}
 			var v string
 			if values[i] == nil {
-				v = "NULL"
+				v = "Null"
 			} else {
 				v = string(values[i])
 			}

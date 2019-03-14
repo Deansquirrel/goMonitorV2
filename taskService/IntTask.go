@@ -58,6 +58,7 @@ func (it *IntTask) StartJob(id string) error {
 		return errors.New("task is not exist")
 	}
 	c.Start()
+	it.setTaskRunningState(id, true)
 	return nil
 }
 
@@ -67,6 +68,7 @@ func (it *IntTask) StopJob(id string) error {
 		return errors.New("task is not exist")
 	}
 	c.Stop()
+	it.setTaskRunningState(id, false)
 	return nil
 }
 
@@ -151,8 +153,10 @@ func (it *IntTask) addTask(config *taskConfigRepository.IntTaskConfigData) error
 	err = c.AddJob(config.FCron, w)
 	if err != nil {
 		log.Error(err.Error())
+		it.setTaskRunningState(config.FId, false)
 	} else {
 		c.Start()
+		it.setTaskRunningState(config.FId, true)
 	}
 	intTaskList[config.FId] = c
 	return err
@@ -190,4 +194,13 @@ func (it *IntTask) removeTask(id string) {
 		c.Stop()
 		delete(intTaskList, id)
 	}
+	it.delTaskRunningState(id)
+}
+
+func (it *IntTask) setTaskRunningState(id string, s bool) {
+	intTaskState[id] = s
+}
+
+func (it *IntTask) delTaskRunningState(id string) {
+	delete(intTaskState, id)
 }

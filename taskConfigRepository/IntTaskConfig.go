@@ -19,6 +19,7 @@ const SqlGetIntTaskConfigById = "" +
 	"WHERE [FId]=?"
 
 type IntTaskConfig struct {
+	isRunning bool
 }
 
 type IntTaskConfigData struct {
@@ -75,24 +76,6 @@ func (config *IntTaskConfigData) IsEqual(c *IntTaskConfigData) bool {
 	}
 	return true
 }
-
-//func NewIntTaskConfig(server string, port int, dbName string, dbUser string, dbPwd string,
-//	search string, cron string, checkMax int, checkMin int, msgTitle string, msgContent string) *intTaskConfigData {
-//	return &intTaskConfigData{
-//		FId:         strings.ToUpper(goToolCommon.Guid()),
-//		FServer:     server,
-//		FPort:       port,
-//		FDbName:     dbName,
-//		FDbUser:     dbUser,
-//		FDbPwd:      dbPwd,
-//		FSearch:     search,
-//		FCron:       cron,
-//		FCheckMax:   checkMax,
-//		FCheckMin:   checkMin,
-//		FMsgTitle:   msgTitle,
-//		FMsgContent: msgContent,
-//	}
-//}
 
 func (itc *IntTaskConfig) GetIntTaskConfigList() ([]*IntTaskConfigData, error) {
 	rows, err := comm.getRowsBySQL(SqlGetIntTaskConfig)

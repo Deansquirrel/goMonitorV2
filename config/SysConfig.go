@@ -10,6 +10,7 @@ type SysConfig struct {
 	DingTalkConfig dingTalkConfig `toml:"dingTalkConfig"`
 	ConfigDBConfig configDBConfig `toml:"configDBConfig"`
 	TaskConfig     taskConfig     `toml:"taskConfig"`
+	IrisConfig     irisConfig     `toml:"irisConfig"`
 }
 
 //返回配置字符串
@@ -23,4 +24,5 @@ func (sc *SysConfig) FormatConfig() {
 	sc.ServiceConfig.FormatConfig()
 	sc.DingTalkConfig.FormatConfig()
 	sc.TaskConfig.FormatConfig()
+	sc.IrisConfig.FormatConfig()
 }

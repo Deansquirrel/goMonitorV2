@@ -26,3 +26,7 @@ pwd=""
 
 [taskConfig]
 keepDays=30
+
+[irisConfig]
+port=8000
+logLevel="debug"

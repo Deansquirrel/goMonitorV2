@@ -66,6 +66,9 @@ func (ws *webService) irisInit(app *iris.Application) {
 func (ws *webService) irisRouter(app *iris.Application) {
 	routerBase := wsRouter.NewRouterBase(app)
 	routerBase.AddBase()
+	routerTask := wsRouter.NewRouterTask(app)
+	routerTask.AddTask()
+
 	//routerDingTalk := wsRouter.NewRouterDingTalk(app)
 	//routerDingTalk.AddDingTalk()
 }

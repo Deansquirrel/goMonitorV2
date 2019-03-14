@@ -1,6 +1,8 @@
 package router
 
-import "github.com/kataras/iris"
+import (
+	"github.com/kataras/iris"
+)
 
 type task struct {
 	app *iris.Application
@@ -16,4 +18,11 @@ func NewRouterTask(app *iris.Application) *task {
 
 func (t *task) AddTask() {
 	//ToDo
+	t.app.Get("/task", t.root)
+}
+
+func (t *task) root(ctx iris.Context) {
+	//state := taskService.NewTaskStateSnap()
+	//var body string
+	//todo
 }

@@ -23,3 +23,6 @@ port=1433
 dbName=""
 user=""
 pwd=""
+
+[taskConfig]
+keepDays=30

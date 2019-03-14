@@ -3,6 +3,7 @@ package taskService
 import (
 	"errors"
 	"fmt"
+	"github.com/Deansquirrel/goMonitorV2/global"
 	"github.com/Deansquirrel/goMonitorV2/taskConfigRepository"
 	"github.com/Deansquirrel/goMonitorV2/worker"
 	"github.com/Deansquirrel/goToolCommon"
@@ -84,7 +85,10 @@ func (it *IntTask) refreshConfig() {
 
 func (it *IntTask) delHisData() {
 	intTaskHis := taskConfigRepository.IntTaskHis{}
-	_ = intTaskHis.ClearIntTaskHis(time.Hour * 24 * 7)
+	d := time.Duration(1000 * 1000 * 1000 * 60 * 60 * 24 * global.SysConfig.TaskConfig.KeepDays)
+	log.Debug(goToolCommon.GetDateTimeStr(time.Now()))
+	log.Debug(goToolCommon.GetDateTimeStr(time.Now().Add(d)))
+	_ = intTaskHis.ClearIntTaskHis(d)
 }
 
 func (it *IntTask) RefreshConfig() error {

@@ -15,7 +15,7 @@ const SqlGetTaskMConfigById = "" +
 type TaskMConfig struct {
 }
 
-type taskMConfigData struct {
+type TaskMConfigData struct {
 	FId     string
 	FTitle  string
 	FRemark string
@@ -29,7 +29,7 @@ type taskMConfigData struct {
 //	}
 //}
 
-func (tmc *TaskMConfig) GetMConfigList() ([]*taskMConfigData, error) {
+func (tmc *TaskMConfig) GetMConfigList() ([]*TaskMConfigData, error) {
 	rows, err := comm.getRowsBySQL(SqlGetTaskMConfig)
 	if err != nil {
 		return nil, err
@@ -37,7 +37,7 @@ func (tmc *TaskMConfig) GetMConfigList() ([]*taskMConfigData, error) {
 	return tmc.getMConfigListByRows(rows)
 }
 
-func (tmc *TaskMConfig) GetMConfig(id string) ([]*taskMConfigData, error) {
+func (tmc *TaskMConfig) GetMConfig(id string) ([]*TaskMConfigData, error) {
 	rows, err := comm.getRowsBySQL(SqlGetTaskMConfigById, id)
 	if err != nil {
 		return nil, err
@@ -45,19 +45,19 @@ func (tmc *TaskMConfig) GetMConfig(id string) ([]*taskMConfigData, error) {
 	return tmc.getMConfigListByRows(rows)
 }
 
-func (tmc *TaskMConfig) getMConfigListByRows(rows *sql.Rows) ([]*taskMConfigData, error) {
+func (tmc *TaskMConfig) getMConfigListByRows(rows *sql.Rows) ([]*TaskMConfigData, error) {
 	defer func() {
 		_ = rows.Close()
 	}()
 	var fId, fTitle, fRemark string
-	resultList := make([]*taskMConfigData, 0)
+	resultList := make([]*TaskMConfigData, 0)
 	var err error
 	for rows.Next() {
 		err = rows.Scan(&fId, &fTitle, &fRemark)
 		if err != nil {
 			return nil, err
 		}
-		config := taskMConfigData{
+		config := TaskMConfigData{
 			FId:     fId,
 			FTitle:  fTitle,
 			FRemark: fRemark,

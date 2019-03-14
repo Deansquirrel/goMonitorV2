@@ -6,17 +6,19 @@ import (
 )
 
 const SqlGetIntTaskConfig = "" +
-	"SELECT [FId],[FServer],[FPort],[FDbName],[FDbUser]," +
-	"[FDbPwd],[FSearch],[FCron],[FCheckMax],[FCheckMin]," +
-	"[FMsgTitle],[FMsgContent] " +
-	"FROM [IntTaskConfig]"
+	"SELECT B.[FId],B.[FServer],B.[FPort],B.[FDbName],B.[FDbUser]," +
+	"B.[FDbPwd],B.[FSearch],B.[FCron],B.[FCheckMax],B.[FCheckMin]," +
+	"B.[FMsgTitle],B.[FMsgContent]" +
+	" FROM [MConfig] A" +
+	" INNER JOIN [IntTaskConfig] B ON A.[FId] = B.[FId]"
 
 const SqlGetIntTaskConfigById = "" +
-	"SELECT [FId],[FServer],[FPort],[FDbName],[FDbUser]," +
-	"[FDbPwd],[FSearch],[FCron],[FCheckMax],[FCheckMin]," +
-	"[FMsgTitle],[FMsgContent] " +
-	"FROM [IntTaskConfig] " +
-	"WHERE [FId]=?"
+	"SELECT B.[FId],B.[FServer],B.[FPort],B.[FDbName],B.[FDbUser]," +
+	"B.[FDbPwd],B.[FSearch],B.[FCron],B.[FCheckMax],B.[FCheckMin]," +
+	"B.[FMsgTitle],B.[FMsgContent]" +
+	" FROM [MConfig] A" +
+	" INNER JOIN [IntTaskConfig] B ON A.[FId] = B.[FId]" +
+	" WHERE B.[FId]=?"
 
 type IntTaskConfig struct {
 	isRunning bool

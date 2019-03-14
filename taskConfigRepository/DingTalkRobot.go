@@ -7,18 +7,21 @@ import (
 )
 
 const SqlGetDingTalkRobot = "" +
-	"SELECT [FId],[FWebHookKey],[FAtMobiles],[FIsAtAll] " +
-	"FROM [DingTalkRobot]"
+	"SELECT B.[FId],B.[FWebHookKey],B.[FAtMobiles],B.[FIsAtAll]" +
+	" FROM [NConfig] A" +
+	" INNER JOIN [DingTalkRobot] B ON A.[FId] = B.[FId]"
 
 const SqlGetDingTalkRobotById = "" +
-	"SELECT [FId],[FWebHookKey],[FAtMobiles],[FIsAtAll] " +
-	"FROM [DingTalkRobot]" +
-	"WHERE [FId]=?"
+	"SELECT B.[FId],B.[FWebHookKey],B.[FAtMobiles],B.[FIsAtAll]" +
+	" FROM [NConfig] A" +
+	" INNER JOIN [DingTalkRobot] B ON A.[FId] = B.[FId]" +
+	" WHERE A.[FId]=?"
 
 const SqlGetDingTalkRobotByIdList = "" +
-	"SELECT [FId],[FWebHookKey],[FAtMobiles],[FIsAtAll] " +
-	"FROM [DingTalkRobot]" +
-	"WHERE [FId] in (%s)"
+	"SELECT B.[FId],B.[FWebHookKey],B.[FAtMobiles],B.[FIsAtAll]" +
+	" FROM [NConfig] A" +
+	" INNER JOIN [DingTalkRobot] B ON A.[FId] = B.[FId]" +
+	" WHERE A.[FId] in (%s)"
 
 type DingTalkRobot struct {
 }

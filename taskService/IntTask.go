@@ -88,8 +88,6 @@ func (it *IntTask) refreshConfig() {
 func (it *IntTask) delHisData() {
 	intTaskHis := taskConfigRepository.IntTaskHis{}
 	d := time.Duration(1000 * 1000 * 1000 * 60 * 60 * 24 * global.SysConfig.TaskConfig.KeepDays)
-	log.Debug(goToolCommon.GetDateTimeStr(time.Now()))
-	log.Debug(goToolCommon.GetDateTimeStr(time.Now().Add(d)))
 	_ = intTaskHis.ClearIntTaskHis(d)
 }
 

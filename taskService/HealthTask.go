@@ -57,6 +57,7 @@ func (ht *HealthTask) StartJob(id string) error {
 		return errors.New("task is not exist")
 	}
 	c.Start()
+	ht.setTaskRunningState(id, true)
 	return nil
 }
 
@@ -66,6 +67,7 @@ func (ht *HealthTask) StopJob(id string) error {
 		return errors.New("task is not exist")
 	}
 	c.Stop()
+	ht.setTaskRunningState(id, false)
 	return nil
 }
 
@@ -140,8 +142,10 @@ func (ht *HealthTask) addTask(config *taskConfigRepository.HealthTaskConfigData)
 	err = c.AddJob(config.FCron, w)
 	if err != nil {
 		log.Error(err.Error())
+		ht.setTaskRunningState(config.FId, false)
 	} else {
 		c.Start()
+		ht.setTaskRunningState(config.FId, true)
 	}
 	healthTaskList[config.FId] = c
 	return err
@@ -179,4 +183,13 @@ func (ht *HealthTask) removeTask(id string) {
 		c.Stop()
 		delete(healthTaskList, id)
 	}
+	ht.delTaskRunningState(id)
+}
+
+func (ht *HealthTask) setTaskRunningState(id string, s bool) {
+	healthTaskState[id] = s
+}
+
+func (ht *HealthTask) delTaskRunningState(id string) {
+	delete(healthTaskState, id)
 }

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Deansquirrel/goMonitorV2/taskConfigRepository"
+	"github.com/Deansquirrel/goToolCommon"
 	log "github.com/Deansquirrel/goToolLog"
 	"github.com/Deansquirrel/goToolMSSql"
 	"strconv"
@@ -31,14 +32,16 @@ func (iw *intWorker) Run() {
 		comm.sendMsg(iw.intTaskConfigData.FId, comm.getMsg(iw.intTaskConfigData.FMsgTitle, err.Error()))
 		return
 	}
+	var msg string
 	if num > iw.intTaskConfigData.FCheckMax || num < iw.intTaskConfigData.FCheckMin {
-		msg := comm.getMsg(iw.intTaskConfigData.FMsgTitle, strings.Replace(iw.intTaskConfigData.FMsgContent, "title", strconv.Itoa(num), -1))
+		msg = comm.getMsg(iw.intTaskConfigData.FMsgTitle, strings.Replace(iw.intTaskConfigData.FMsgContent, "title", strconv.Itoa(num), -1))
 		dMsg := iw.getDMsg()
 		if dMsg != "" {
 			msg = msg + "\n" + dMsg
 		}
 		comm.sendMsg(iw.intTaskConfigData.FId, msg)
 	}
+	iw.saveSearchResult(num, msg)
 }
 
 //获取待检测值
@@ -55,6 +58,7 @@ func (iw *intWorker) getCheckNum() (int, error) {
 	for rows.Next() {
 		err = rows.Scan(&num)
 		if err != nil {
+			log.Error(err.Error())
 			break
 		} else {
 			list = append(list, num)
@@ -64,7 +68,9 @@ func (iw *intWorker) getCheckNum() (int, error) {
 		return 0, err
 	}
 	if len(list) != 1 {
-		return 0, errors.New(fmt.Sprintf("SQL返回数量异常，exp:1,act:%d", len(list)))
+		errMsg := fmt.Sprintf("SQL返回数量异常，exp:1,act:%d", len(list))
+		log.Error(errMsg)
+		return 0, errors.New(errMsg)
 	}
 	return list[0], nil
 }
@@ -84,11 +90,12 @@ func (iw *intWorker) getDBConfig() *goToolMSSql.MSSqlConfig {
 func (iw *intWorker) getRowsBySQL(sql string) (*sql.Rows, error) {
 	conn, err := goToolMSSql.GetConn(iw.getDBConfig())
 	if err != nil {
+		log.Error(err.Error())
 		return nil, err
 	}
 	rows, err := conn.Query(sql)
 	if err != nil {
-		log.Debug(err.Error())
+		log.Error(err.Error())
 		return nil, err
 	}
 	return rows, nil
@@ -99,6 +106,7 @@ func (iw *intWorker) getDMsg() string {
 	intTaskDConfig := taskConfigRepository.IntTaskDConfig{}
 	dConfigList, err := intTaskDConfig.GetIntTaskDConfig(iw.intTaskConfigData.FId)
 	if err != nil {
+		log.Error(err.Error())
 		return err.Error()
 	}
 	var msg, result string
@@ -162,4 +170,16 @@ func (iw *intWorker) getSingleDMsg(search string) string {
 		return fmt.Sprintf("读取明细内容时遇到错误：%s，查询语句为：%s", err.Error(), search)
 	}
 	return result
+}
+
+//保存查询结果
+func (iw *intWorker) saveSearchResult(num int, content string) {
+	nData := &taskConfigRepository.IntTaskHisData{
+		FId:       strings.ToUpper(goToolCommon.Guid()),
+		FConfigId: iw.intTaskConfigData.FId,
+		FNum:      num,
+		FContent:  content,
+	}
+	intTaskHis := taskConfigRepository.IntTaskHis{}
+	_ = intTaskHis.SetIntTaskHis(nData)
 }

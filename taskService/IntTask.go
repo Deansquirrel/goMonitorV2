@@ -72,6 +72,7 @@ func (it *IntTask) StopJob(id string) error {
 func (it *IntTask) startRegularRefresh() {
 	time.AfterFunc(time.Second*30, it.startRegularRefresh)
 	it.refreshConfig()
+	it.delHisData()
 }
 
 func (it *IntTask) refreshConfig() {
@@ -79,6 +80,11 @@ func (it *IntTask) refreshConfig() {
 	if err != nil {
 		log.Error("刷新Int配置时遇到错误：" + err.Error())
 	}
+}
+
+func (it *IntTask) delHisData() {
+	intTaskHis := taskConfigRepository.IntTaskHis{}
+	_ = intTaskHis.ClearIntTaskHis(time.Hour * 24 * 7)
 }
 
 func (it *IntTask) RefreshConfig() error {

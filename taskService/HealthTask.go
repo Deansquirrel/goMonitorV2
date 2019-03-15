@@ -8,7 +8,6 @@ import (
 	"github.com/Deansquirrel/goToolCommon"
 	log "github.com/Deansquirrel/goToolLog"
 	"github.com/robfig/cron"
-	"time"
 )
 
 type HealthTask struct {
@@ -72,14 +71,19 @@ func (ht *HealthTask) StopJob(id string) error {
 }
 
 func (ht *HealthTask) startRegularRefresh() {
-	time.AfterFunc(time.Second*30, ht.startRegularRefresh)
-	ht.refreshConfig()
+	c := cron.New()
+	var err error
+	err = c.AddFunc("0 0/1 * * * ?", ht.refreshConfig)
+	if err != nil {
+		log.Error("添加Health配置刷新任务时遇到错误：" + err.Error())
+	}
+	c.Start()
 }
 
 func (ht *HealthTask) refreshConfig() {
 	err := ht.RefreshConfig()
 	if err != nil {
-		log.Error("刷新[IntTask]配置时遇到错误：" + err.Error())
+		log.Error("刷新Health配置时遇到错误：" + err.Error())
 	}
 }
 

@@ -73,9 +73,17 @@ func (it *IntTask) StopJob(id string) error {
 }
 
 func (it *IntTask) startRegularRefresh() {
-	time.AfterFunc(time.Second*30, it.startRegularRefresh)
-	it.refreshConfig()
-	it.delHisData()
+	c := cron.New()
+	var err error
+	err = c.AddFunc("0 0/1 * * * ?", it.refreshConfig)
+	if err != nil {
+		log.Error("添加Int配置刷新任务时遇到错误：" + err.Error())
+	}
+	err = c.AddFunc("0 0 0 * * ?", it.delHisData)
+	if err != nil {
+		log.Error("添加删除历史数据任务时遇到错误：" + err.Error())
+	}
+	c.Start()
 }
 
 func (it *IntTask) refreshConfig() {

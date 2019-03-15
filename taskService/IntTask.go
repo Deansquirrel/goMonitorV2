@@ -78,14 +78,19 @@ func (it *IntTask) startRegularRefresh() {
 	err = c.AddFunc("0 0/1 * * * ?", it.refreshConfig)
 	if err != nil {
 		log.Error("添加Int配置刷新任务时遇到错误：" + err.Error())
+	} else {
+		log.Info("添加Int配置刷新任务完成")
 	}
 	err = c.AddFunc("0 0 0 * * ?", it.delHisData)
 	if err != nil {
-		log.Error("添加删除历史数据任务时遇到错误：" + err.Error())
+		log.Error("添加删除Int历史数据任务时遇到错误：" + err.Error())
+	} else {
+		log.Info("添加删除Int历史数据任务完成")
 	}
 	c.Start()
 }
 
+//刷新Int任务配置
 func (it *IntTask) refreshConfig() {
 	err := it.RefreshConfig()
 	if err != nil {
@@ -93,6 +98,7 @@ func (it *IntTask) refreshConfig() {
 	}
 }
 
+//删除Int历史数据
 func (it *IntTask) delHisData() {
 	intTaskHis := taskConfigRepository.IntTaskHis{}
 	d := time.Duration(1000 * 1000 * 1000 * 60 * 60 * 24 * global.SysConfig.TaskConfig.KeepDays)

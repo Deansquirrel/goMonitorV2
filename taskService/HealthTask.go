@@ -76,10 +76,13 @@ func (ht *HealthTask) startRegularRefresh() {
 	err = c.AddFunc("0 0/1 * * * ?", ht.refreshConfig)
 	if err != nil {
 		log.Error("添加Health配置刷新任务时遇到错误：" + err.Error())
+	} else {
+		log.Info("添加Health配置刷新任务完成")
 	}
 	c.Start()
 }
 
+//刷新Health任务配置
 func (ht *HealthTask) refreshConfig() {
 	err := ht.RefreshConfig()
 	if err != nil {

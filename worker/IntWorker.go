@@ -34,7 +34,7 @@ func (iw *intWorker) Run() {
 		return
 	}
 	var msg string
-	if num > iw.intTaskConfigData.FCheckMax || num < iw.intTaskConfigData.FCheckMin {
+	if num >= iw.intTaskConfigData.FCheckMax || num <= iw.intTaskConfigData.FCheckMin {
 		msg = iw.getTMsg(num)
 		dMsg := iw.getDMsg()
 		if dMsg != "" {

@@ -21,7 +21,6 @@ const SqlGetIntTaskConfigById = "" +
 	" WHERE B.[FId]=?"
 
 type IntTaskConfig struct {
-	isRunning bool
 }
 
 type IntTaskConfigData struct {

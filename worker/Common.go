@@ -68,6 +68,7 @@ func (c *common) sendMsg(taskId, msg string) {
 	if err != nil {
 		log.Error(fmt.Sprintf("获取通知信息时发送错误:%s", err.Error()))
 	}
+	//发送钉钉消息
 	for _, s := range nData.DingTalkRobot {
 		dingTalkRobotConfig, err := dingTalkRobot.GetDingTalkRobot(s)
 		if err != nil {

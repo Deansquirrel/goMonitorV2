@@ -34,7 +34,12 @@ func (iw *intWorker) Run() {
 	}
 	var msg string
 	if num > iw.intTaskConfigData.FCheckMax || num < iw.intTaskConfigData.FCheckMin {
-		msg = comm.getMsg(iw.intTaskConfigData.FMsgTitle, strings.Replace(iw.intTaskConfigData.FMsgContent, "title", strconv.Itoa(num), -1))
+		//msg = comm.getMsg(iw.intTaskConfigData.FMsgTitle, strings.Replace(iw.intTaskConfigData.FMsgContent, "title", strconv.Itoa(num), -1))
+		//dMsg := iw.getDMsg()
+		//if dMsg != "" {
+		//	msg = msg + "\n" + dMsg
+		//}
+		msg = iw.getTMsg(num)
 		dMsg := iw.getDMsg()
 		if dMsg != "" {
 			msg = msg + "\n" + dMsg
@@ -101,12 +106,23 @@ func (iw *intWorker) getRowsBySQL(sql string) (*sql.Rows, error) {
 	return rows, nil
 }
 
+//获取主信息
+func (iw *intWorker) getTMsg(num int) string {
+	return comm.getMsg(iw.intTaskConfigData.FMsgTitle, iw.getTMsgContent(num))
+}
+
+func (iw *intWorker) getTMsgContent(num int) string {
+	msgContent := iw.intTaskConfigData.FMsgContent
+	msgContent = strings.Replace(msgContent, "title", strconv.Itoa(num), -1)
+	return msgContent
+}
+
 //获取详细消息
 func (iw *intWorker) getDMsg() string {
 	intTaskDConfig := taskConfigRepository.IntTaskDConfig{}
 	dConfigList, err := intTaskDConfig.GetIntTaskDConfig(iw.intTaskConfigData.FId)
 	if err != nil {
-		log.Error(err.Error())
+		log.Error("获取明细信息查询配置时遇到错误：" + err.Error())
 		return err.Error()
 	}
 	var msg, result string

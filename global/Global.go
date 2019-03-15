@@ -10,7 +10,7 @@ import (
 const (
 	//PreVersion = "0.0.2 Build20190314"
 	//TestVersion = "0.0.0 Build20190101"
-	Version = "0.0.0 Build20190101"
+	Version = "0.0.3 Build20190315"
 )
 
 var SysConfig *config.SysConfig

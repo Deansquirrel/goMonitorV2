@@ -10,6 +10,7 @@ import (
 	"github.com/Deansquirrel/goToolMSSql"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type intWorker struct {
@@ -34,11 +35,6 @@ func (iw *intWorker) Run() {
 	}
 	var msg string
 	if num > iw.intTaskConfigData.FCheckMax || num < iw.intTaskConfigData.FCheckMin {
-		//msg = comm.getMsg(iw.intTaskConfigData.FMsgTitle, strings.Replace(iw.intTaskConfigData.FMsgContent, "title", strconv.Itoa(num), -1))
-		//dMsg := iw.getDMsg()
-		//if dMsg != "" {
-		//	msg = msg + "\n" + dMsg
-		//}
 		msg = iw.getTMsg(num)
 		dMsg := iw.getDMsg()
 		if dMsg != "" {
@@ -160,6 +156,7 @@ func (iw *intWorker) getSingleDMsg(search string) string {
 	for i := 0; i < counter; i++ {
 		valuePointers[i] = &values[i]
 	}
+
 	var result string
 	for rows.Next() {
 		err = rows.Scan(valuePointers...)
@@ -178,6 +175,10 @@ func (iw *intWorker) getSingleDMsg(search string) string {
 				v = "Null"
 			} else {
 				v = string(values[i])
+				t, err := time.Parse(time.RFC3339, v)
+				if err == nil {
+					v = goToolCommon.GetDateTimeStr(t)
+				}
 			}
 			result = result + titleList[i] + " - " + v
 		}

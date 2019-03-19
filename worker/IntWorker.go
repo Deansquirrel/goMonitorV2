@@ -10,7 +10,6 @@ import (
 	"github.com/Deansquirrel/goToolMSSql"
 	"strconv"
 	"strings"
-	"time"
 )
 
 type intWorker struct {
@@ -151,7 +150,7 @@ func (iw *intWorker) getSingleDMsg(search string) string {
 		return fmt.Sprintf("获取明细内容表头时遇到错误：%s，查询语句为：%s", err.Error(), search)
 	}
 	counter := len(titleList)
-	values := make([]sql.RawBytes, counter)
+	values := make([]interface{}, counter)
 	valuePointers := make([]interface{}, counter)
 	for i := 0; i < counter; i++ {
 		valuePointers[i] = &values[i]
@@ -174,11 +173,7 @@ func (iw *intWorker) getSingleDMsg(search string) string {
 			if values[i] == nil {
 				v = "Null"
 			} else {
-				v = string(values[i])
-				t, err := time.Parse(time.RFC3339, v)
-				if err == nil {
-					v = goToolCommon.GetDateTimeStr(t)
-				}
+				v = goToolCommon.ConvertToString(values[i])
 			}
 			result = result + titleList[i] + " - " + v
 		}

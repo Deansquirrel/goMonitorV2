@@ -79,7 +79,6 @@ func (dt *dingTalkRobot) sendData(data []byte, url string) ([]byte, error) {
 	log.Debug(string(data))
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(data))
 	if err != nil {
-
 		return nil, errors.New("构造http请求数据时发生错误：" + err.Error())
 	}
 	req.Header.Set("Content-Type", "application/json")

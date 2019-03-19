@@ -13,6 +13,10 @@ const (
 	Version = "0.0.0 Build20190101"
 )
 
+const (
+	HttpGetTimeout = 30
+)
+
 var SysConfig *config.SysConfig
 var Ctx context.Context
 var Cancel func()

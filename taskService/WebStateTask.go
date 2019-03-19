@@ -143,6 +143,14 @@ func (wst *WebStateTask) RefreshConfig() error {
 }
 
 func (wst *WebStateTask) addTask(config *taskConfigRepository.WebStateTaskConfigData) error {
+	configStr, err := goToolCommon.GetJsonStr(config)
+	if err != nil {
+		log.Warn(fmt.Sprintf("Add WebState Task，转换配置内容时遇到错误:%s，configID：%s", configStr, config.FId))
+	} else {
+		log.Warn(fmt.Sprintf("Add WebState Task:%s", configStr))
+	}
+	//------------------------------------------------------------------------------------------------------------------
+
 	//todo
 	return nil
 }

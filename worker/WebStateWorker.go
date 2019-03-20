@@ -1,6 +1,7 @@
 package worker
 
 import (
+	"fmt"
 	"github.com/Deansquirrel/goMonitorV2/global"
 	"github.com/Deansquirrel/goMonitorV2/taskConfigRepository"
 	"github.com/Deansquirrel/goToolCommon"
@@ -22,27 +23,29 @@ func NewWebStateWorker(webStateTaskConfigData *taskConfigRepository.WebStateTask
 }
 
 func (wsw *webStateWorker) Run() {
+	var msg string
 	begTime := time.Now()
-	log.Debug(goToolCommon.GetDateTimeStr(begTime))
 	code, err := wsw.getHttpCode()
 	endTime := time.Now()
-	log.Debug(goToolCommon.GetDateTimeStr(endTime))
-	if err != nil {
-		log.Error(err.Error())
-		comm.sendMsg(wsw.webStateTaskConfigData.FId, wsw.getMsg(wsw.webStateTaskConfigData.FMsgTitle, err.Error()))
-		return
-	}
 	ns := endTime.Sub(begTime).Nanoseconds()
 	ms := ns / 1000 / 1000
-	if code == 200 {
-		wsw.saveHisResult(200, int(ms), "")
-		return
+	if err != nil {
+		log.Error(err.Error())
+		msg = "网址打开异常" + "\n" + err.Error()
+	} else if code != 200 {
+		msg = wsw.getMsgContent(code)
+		if msg == "" {
+			msg = fmt.Sprintf("网址打开异常(%d)", code)
+		}
 	} else {
-		msg := wsw.getMsg(wsw.webStateTaskConfigData.FMsgTitle, wsw.getMsgContent(code))
-		comm.sendMsg(wsw.webStateTaskConfigData.FId, msg)
-		wsw.saveHisResult(200, int(ms), msg)
-		return
+		msg = ""
 	}
+	if msg != "" {
+		msg = wsw.getMsg(wsw.webStateTaskConfigData.FMsgTitle, msg)
+		comm.sendMsg(wsw.webStateTaskConfigData.FId, msg)
+	}
+	wsw.saveHisResult(code, int(ms), msg)
+	return
 }
 
 func (wsw *webStateWorker) getMsg(title, content string) string {
@@ -76,19 +79,6 @@ func (wsw *webStateWorker) getHttpCode() (int, error) {
 		_ = resp.Body.Close()
 	}()
 	return resp.StatusCode, nil
-	//u,err := url.Parse(wsw.webStateTaskConfigData.FUrl)
-	//if err != nil {
-	//	return 0,err
-	//}
-	//q := u.Query()
-	//u.RawQuery = q.Encode()
-	//res,err := http.Get(u.String())
-	//if err != nil {
-	//	return 0,err
-	//}
-	//resCode := res.StatusCode
-	//_ = res.Body.Close()
-	//return resCode,nil
 }
 
 func (wsw *webStateWorker) saveHisResult(httpCode int, ms int, content string) {

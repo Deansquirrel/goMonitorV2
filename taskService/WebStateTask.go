@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Deansquirrel/goMonitorV2/global"
 	"github.com/Deansquirrel/goMonitorV2/taskConfigRepository"
+	"github.com/Deansquirrel/goMonitorV2/worker"
 	"github.com/Deansquirrel/goToolCommon"
 	"github.com/robfig/cron"
 	"time"
@@ -150,19 +151,63 @@ func (wst *WebStateTask) addTask(config *taskConfigRepository.WebStateTaskConfig
 		log.Warn(fmt.Sprintf("Add WebState Task:%s", configStr))
 	}
 	//------------------------------------------------------------------------------------------------------------------
-
-	//todo
-	return nil
+	webStateConfigList[config.FId] = config
+	w := worker.NewWebStateWorker(config)
+	c := cron.New()
+	err = c.AddJob(config.FCron, w)
+	if err != nil {
+		log.Error(err.Error())
+		wst.setTaskRunningState(config.FId, false)
+	} else {
+		c.Start()
+		wst.setTaskRunningState(config.FId, true)
+	}
+	webStateTaskList[config.FId] = c
+	return err
 }
 
 func (wst *WebStateTask) checkTask(config *taskConfigRepository.WebStateTaskConfigData) error {
-	//todo
-	return nil
+	exConfig, ok := webStateConfigList[config.FId]
+	if !ok {
+		return wst.addTask(config)
+	}
+	if exConfig.IsEqual(config) {
+		return nil
+	}
+	wst.removeTask(config.FId)
+	return wst.addTask(config)
 }
 
 func (wst *WebStateTask) removeTask(id string) {
-	//todo
+	wst.clearConfigList(id)
+	wst.clearTaskList(id)
+	wst.delTaskRunningState(id)
 	return
+}
+
+func (wst *WebStateTask) clearConfigList(id string) {
+	config, ok := webStateConfigList[id]
+	if !ok {
+		log.Warn(fmt.Sprintf("remove task :config is not exist,taskId[%s]", id))
+		return
+	}
+	configStr, err := goToolCommon.GetJsonStr(config)
+	if err != nil {
+		log.Warn(fmt.Sprintf("Del WebState Task，转换配置内容时遇到错误:%s，configID：%s", configStr, config.FId))
+	} else {
+		log.Warn(fmt.Sprintf("Del WebState Task:%s", configStr))
+	}
+	delete(webStateConfigList, id)
+}
+
+func (wst *WebStateTask) clearTaskList(id string) {
+	c, ok := webStateTaskList[id]
+	if !ok {
+		log.Warn(fmt.Sprintf("remove task :task is not exist,taskId[%s]", id))
+		return
+	}
+	c.Stop()
+	delete(webStateTaskList, id)
 }
 
 func (wst *WebStateTask) setTaskRunningState(id string, s bool) {

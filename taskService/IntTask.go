@@ -175,8 +175,8 @@ func (it *IntTask) addTask(config *taskConfigRepository.IntTaskConfigData) error
 }
 
 func (it *IntTask) checkTask(config *taskConfigRepository.IntTaskConfigData) error {
-	exConfig := intConfigList[config.FId]
-	if exConfig == nil {
+	exConfig, ok := intConfigList[config.FId]
+	if !ok {
 		return it.addTask(config)
 	}
 	if exConfig.IsEqual(config) {
@@ -187,26 +187,34 @@ func (it *IntTask) checkTask(config *taskConfigRepository.IntTaskConfigData) err
 }
 
 func (it *IntTask) removeTask(id string) {
-	config := intConfigList[id]
-	if config == nil {
-		log.Warn(fmt.Sprintf("remove task :config is not exist,taskId[%s]", id))
-	} else {
-		configStr, err := goToolCommon.GetJsonStr(config)
-		if err != nil {
-			log.Warn(fmt.Sprintf("Del Int Task，转换配置内容时遇到错误:%s，configID：%s", configStr, config.FId))
-		} else {
-			log.Warn(fmt.Sprintf("Del Int Task:%s", configStr))
-		}
-		delete(intConfigList, id)
-	}
-	c := intTaskList[id]
-	if c == nil {
-		log.Warn(fmt.Sprintf("remove task :task is not exist,taskId[%s]", id))
-	} else {
-		c.Stop()
-		delete(intTaskList, id)
-	}
+	it.clearConfigList(id)
+	it.clearTaskList(id)
 	it.delTaskRunningState(id)
+}
+
+func (it *IntTask) clearConfigList(id string) {
+	config, ok := intConfigList[id]
+	if !ok {
+		log.Warn(fmt.Sprintf("remove task :config is not exist,taskId[%s]", id))
+		return
+	}
+	configStr, err := goToolCommon.GetJsonStr(config)
+	if err != nil {
+		log.Warn(fmt.Sprintf("Del Int Task，转换配置内容时遇到错误:%s，configID：%s", configStr, config.FId))
+	} else {
+		log.Warn(fmt.Sprintf("Del Int Task:%s", configStr))
+	}
+	delete(intConfigList, id)
+}
+
+func (it *IntTask) clearTaskList(id string) {
+	c, ok := intTaskList[id]
+	if !ok {
+		log.Warn(fmt.Sprintf("remove task :task is not exist,taskId[%s]", id))
+		return
+	}
+	c.Stop()
+	delete(intTaskList, id)
 }
 
 func (it *IntTask) setTaskRunningState(id string, s bool) {

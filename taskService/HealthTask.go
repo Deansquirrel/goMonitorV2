@@ -159,8 +159,8 @@ func (ht *HealthTask) addTask(config *taskConfigRepository.HealthTaskConfigData)
 }
 
 func (ht *HealthTask) checkTask(config *taskConfigRepository.HealthTaskConfigData) error {
-	exConfig := healthConfigList[config.FId]
-	if exConfig == nil {
+	exConfig, ok := healthConfigList[config.FId]
+	if !ok {
 		return ht.addTask(config)
 	}
 	if exConfig.IsEqual(config) {
@@ -171,26 +171,34 @@ func (ht *HealthTask) checkTask(config *taskConfigRepository.HealthTaskConfigDat
 }
 
 func (ht *HealthTask) removeTask(id string) {
-	config := healthConfigList[id]
-	if config == nil {
-		log.Warn(fmt.Sprintf("remove task :config is not exist,taskId[%s]", id))
-	} else {
-		configStr, err := goToolCommon.GetJsonStr(config)
-		if err != nil {
-			log.Warn(fmt.Sprintf("Del Health Task，转换配置内容时遇到错误:%s，configID：%s", configStr, config.FId))
-		} else {
-			log.Warn(fmt.Sprintf("Del Health Task:%s", configStr))
-		}
-		delete(healthConfigList, id)
-	}
-	c := healthTaskList[id]
-	if c == nil {
-		log.Warn(fmt.Sprintf("remove task :task is not exist,taskId[%s]", id))
-	} else {
-		c.Stop()
-		delete(healthTaskList, id)
-	}
+	ht.clearConfigList(id)
+	ht.clearTaskList(id)
 	ht.delTaskRunningState(id)
+}
+
+func (ht *HealthTask) clearConfigList(id string) {
+	config, ok := healthConfigList[id]
+	if !ok {
+		log.Warn(fmt.Sprintf("remove task :config is not exist,taskId[%s]", id))
+		return
+	}
+	configStr, err := goToolCommon.GetJsonStr(config)
+	if err != nil {
+		log.Warn(fmt.Sprintf("Del Health Task，转换配置内容时遇到错误:%s，configID：%s", configStr, config.FId))
+	} else {
+		log.Warn(fmt.Sprintf("Del Health Task:%s", configStr))
+	}
+	delete(healthConfigList, id)
+}
+
+func (ht *HealthTask) clearTaskList(id string) {
+	c, ok := healthTaskList[id]
+	if !ok {
+		log.Warn(fmt.Sprintf("remove task :task is not exist,taskId[%s]", id))
+		return
+	}
+	c.Stop()
+	delete(healthTaskList, id)
 }
 
 func (ht *HealthTask) setTaskRunningState(id string, s bool) {

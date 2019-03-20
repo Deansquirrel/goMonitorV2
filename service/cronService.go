@@ -47,6 +47,11 @@ func (cs *cronService) Start() {
 	if err != nil {
 		log.Error(err.Error())
 	}
+	webStateTask := taskService.WebStateTask{}
+	err = webStateTask.StartTask()
+	if err != nil {
+		log.Error(err.Error())
+	}
 
 	ws := webService.NewWebServer(global.SysConfig.IrisConfig.Port)
 	ws.StartWebService()

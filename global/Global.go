@@ -14,7 +14,7 @@ const (
 )
 
 const (
-	HttpGetTimeout = 30
+	HttpTimeout = 30
 )
 
 var SysConfig *config.SysConfig

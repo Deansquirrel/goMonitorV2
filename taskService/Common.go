@@ -17,6 +17,10 @@ var webStateConfigList map[string]*taskConfigRepository.WebStateTaskConfigData
 var webStateTaskList map[string]*cron.Cron
 var webStateTaskState map[string]bool
 
+var crmDzXfTestConfigList map[string]*taskConfigRepository.CrmDzXfTestTaskConfigData
+var crmDzXfTestTaskList map[string]*cron.Cron
+var crmDzXfTestTaskState map[string]bool
+
 func init() {
 	healthConfigList = make(map[string]*taskConfigRepository.HealthTaskConfigData)
 	healthTaskList = make(map[string]*cron.Cron)
@@ -29,4 +33,8 @@ func init() {
 	webStateConfigList = make(map[string]*taskConfigRepository.WebStateTaskConfigData)
 	webStateTaskList = make(map[string]*cron.Cron)
 	webStateTaskState = make(map[string]bool)
+
+	crmDzXfTestConfigList = make(map[string]*taskConfigRepository.CrmDzXfTestTaskConfigData)
+	crmDzXfTestTaskList = make(map[string]*cron.Cron)
+	crmDzXfTestTaskState = make(map[string]bool)
 }

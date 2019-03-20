@@ -69,7 +69,7 @@ func (wsw *webStateWorker) getHttpCode() (int, error) {
 		return -1, err
 	}
 	client := &http.Client{
-		Timeout: time.Second * global.HttpGetTimeout,
+		Timeout: time.Second * global.HttpTimeout,
 	}
 	resp, err := client.Do(req)
 	if err != nil {
